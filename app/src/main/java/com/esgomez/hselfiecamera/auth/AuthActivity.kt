@@ -1,10 +1,12 @@
-package com.esgomez.hselfiecamera
+package com.esgomez.hselfiecamera.auth
 
 import android.app.Activity
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
+import com.esgomez.hselfiecamera.R
+import com.esgomez.hselfiecamera.main.MainActivity
 import com.huawei.hms.support.hwid.HuaweiIdAuthManager
 import com.huawei.hms.support.hwid.request.HuaweiIdAuthParams
 import com.huawei.hms.support.hwid.request.HuaweiIdAuthParamsHelper
@@ -55,7 +57,10 @@ class AuthActivity : AppCompatActivity() {
                 val authHuaweiIdTasks = HuaweiIdAuthManager.parseAuthResultFromIntent(data)
                 //Si el resultado es exitoso, procederemos a autenticar
                 if (authHuaweiIdTasks.isSuccessful){
-                    Toast.makeText(this, "Login Exitoso!", Toast.LENGTH_LONG).show()
+                    //Toast.makeText(this, "Login Exitoso!", Toast.LENGTH_LONG).show()
+                    val intent = Intent(this, MainActivity::class.java)//Que nos lleve a la nueva actividad creada
+                    startActivity(intent)//Que no lleve aya
+                    finish()//Finalizamos la actividad anterior
                 }else {
                     //En caso de que no sea exitoso por que la cuenta ya no está activa,
                     // incompleta o por una falla de conexión
