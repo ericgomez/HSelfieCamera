@@ -5,7 +5,6 @@ import android.graphics.Canvas
 import android.util.AttributeSet
 import android.view.View
 import com.esgomez.hselfiecamera.camera.CameraConfiguration
-import java.util.*
 import kotlin.collections.ArrayList
 
 //Creamos un constructor con dos variables

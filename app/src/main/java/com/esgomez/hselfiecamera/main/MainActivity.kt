@@ -13,14 +13,12 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.esgomez.hselfiecamera.R
 import com.esgomez.hselfiecamera.auth.AuthActivity
-import com.huawei.hms.support.api.entity.common.CommonConstant
 import com.huawei.hms.support.hwid.HuaweiIdAuthManager
 import com.huawei.hms.support.hwid.request.HuaweiIdAuthParams
 import com.huawei.hms.support.hwid.request.HuaweiIdAuthParamsHelper
 import kotlinx.android.synthetic.main.activity_home.*
 import java.lang.Exception
 import java.lang.RuntimeException
-import java.util.jar.Manifest
 
 class MainActivity : AppCompatActivity() {
 
