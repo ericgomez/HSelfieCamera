@@ -1,10 +1,12 @@
 package com.esgomez.hselfiecamera.overlay
 
 import android.content.Context
+import android.graphics.Canvas
 import android.util.AttributeSet
 import android.view.View
 import com.esgomez.hselfiecamera.camera.CameraConfiguration
 import java.util.*
+import kotlin.collections.ArrayList
 
 //Creamos un constructor con dos variables
 class GraphicOverlay(
@@ -23,11 +25,15 @@ class GraphicOverlay(
     var cameraFacing = CameraConfiguration.CAMERA_FACING_FRONT
         private set
 
-    fun addGraphic(){
+    private val graphics: MutableList<BaseGraphic> = ArrayList()
 
+    fun addGraphic(graphic: BaseGraphic){
+        synchronized(lock) {graphics.add(graphic)}
     }
+    //Con esta funcion le decimos a la camara que puede volver a reutilizarse
     fun clear(){
-
+        synchronized(lock) {graphics.clear()}
+        this.postInvalidate()
     }
 
     //Setear la informacion de la camara
@@ -41,5 +47,24 @@ class GraphicOverlay(
         // en un lup infinito
         this.postInvalidate()
     }
+
+    override fun onDraw(canvas: Canvas?) {
+        super.onDraw(canvas)
+        //Crea un cuadrito para rodrear nuestro rostro de nuestra selfie cam
+        synchronized(lock){
+            //Si previewWidth y previewHeight son mayores que cero va a hacer algo
+            if (previewWidth != 0 && previewHeight != 0 ){
+                widthScaleValue =
+                    width.toFloat() / previewWidth.toFloat()
+                heightScaleValue =
+                    height.toFloat() / previewHeight.toFloat()
+            }
+            //Paracada grafica en graphic nos dibuje nuestro cuadrito que nos va a bordear nuestro rostro en la camara
+            for (graphic in graphics){
+                graphic.draw(canvas)
+            }
+        }
+    }
+
 
 }
