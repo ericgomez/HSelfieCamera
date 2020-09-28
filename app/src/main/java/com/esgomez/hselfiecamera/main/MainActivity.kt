@@ -13,6 +13,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.esgomez.hselfiecamera.R
 import com.esgomez.hselfiecamera.auth.AuthActivity
+import com.esgomez.hselfiecamera.face.LiveFaceActivityCamera
 import com.huawei.hms.support.hwid.HuaweiIdAuthManager
 import com.huawei.hms.support.hwid.request.HuaweiIdAuthParams
 import com.huawei.hms.support.hwid.request.HuaweiIdAuthParamsHelper
@@ -154,6 +155,11 @@ class MainActivity : AppCompatActivity() {
         btnLogout.setOnClickListener {
             //Logout Huawei ID
             logoutHuaweiId()
+        }
+
+        mostPeople.setOnClickListener{
+            val intent = Intent(this@MainActivity, LiveFaceActivityCamera::class.java)
+            startActivity(intent)//Llamamos nuestro intent
         }
     }
 

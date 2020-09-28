@@ -18,5 +18,30 @@
             android:layout_alignParentBottom="true"/>
 
     </com.esgomez.hselfiecamera.camera.LensEnginePreview>
+    
+    <Button
+        android:id="@+id/facingSwitch"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:textOff=""
+        android:textOn=""
+        android:background="@drawable/front_back_switch"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="30dp"/>
+
+    <Button
+        android:id="@+id/restart"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_alignParentRight="true"
+        android:layout_marginEnd="20dp"
+        android:textOff=""
+        android:textOn=""
+        android:gravity="start"
+        android:visibility="visible"
+        android:background="@drawable/restart"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="30dp"/>
 
 </RelativeLayout>
