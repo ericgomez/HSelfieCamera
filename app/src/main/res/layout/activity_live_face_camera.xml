@@ -40,6 +40,7 @@
         android:textOn=""
         android:gravity="start"
         android:visibility="visible"
+        android:onClick="startPreview"
         android:background="@drawable/restart"
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="30dp"/>

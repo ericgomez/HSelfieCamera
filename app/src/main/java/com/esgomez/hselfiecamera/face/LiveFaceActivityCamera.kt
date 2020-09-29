@@ -21,7 +21,8 @@ import com.huawei.hms.mlsdk.face.MLMaxSizeFaceTransactor
 import java.io.IOException
 import java.lang.RuntimeException
 
-class LiveFaceActivityCamera : AppCompatActivity() {
+//View.OnClickListener para poder darle click a nuestro boton
+class LiveFaceActivityCamera : AppCompatActivity(), View.OnClickListener {
 
     //Objeto para analizar nuestros rostros
     private var analyzer: MLFaceAnalyzer? = null
@@ -30,6 +31,8 @@ class LiveFaceActivityCamera : AppCompatActivity() {
     private var overlay: GraphicOverlay? = null
     private var lensType = LensEngine.FRONT_LENS//Inicializamos la camara en frontal
     private var detectMode = 0
+    private var isFront = false //Validamos si el lente de la camara se encuentra en la parte delantera o en la parte tracera
+    private val smilingRate = 0.8f//Promedio de sorisas que puede encontrar la camara
     private val smilingPossibility = 0.95f //Este valor osila en el 80% y el 90% el 95% es si verdaderamente estas sonriendo
     private var safeToTakePicture = false //Variable para detectar si es seguro o no es seguro tomar la foto
     private var restart: Button? = null
@@ -52,6 +55,8 @@ class LiveFaceActivityCamera : AppCompatActivity() {
         }
 
         overlay = findViewById(R.id.faceOverlay)
+        //Buscar nuestro boton Switch para setearlo
+        findViewById<View>(R.id.facingSwitch).setOnClickListener(this)
         restart = findViewById(R.id.restart)
 
         //Creamos el analizador de rostro
@@ -158,6 +163,25 @@ class LiveFaceActivityCamera : AppCompatActivity() {
         }
         else {
             //validar los rostros grupal
+            analyzer!!.setTransactor(object  : MLAnalyzer.MLTransactor<MLFace>{
+
+                override fun destroy() {}
+
+                override fun transactResult(result: MLAnalyzer.Result<MLFace>?) {
+                    val faceSparseArray = result!!.analyseList
+                    var flag = 0
+                    for (i in 0 until faceSparseArray.size()){
+                        val emotion = faceSparseArray.valueAt(i).emotions
+                        if (emotion.smilingProbability >  smilingPossibility){
+                            flag++
+                        }
+                    }
+                    if (flag > faceSparseArray.size() * smilingRate && safeToTakePicture){
+                        safeToTakePicture = false//factible tomar la foto
+                    }
+                }
+
+            })
         }
     }
 
@@ -199,13 +223,29 @@ class LiveFaceActivityCamera : AppCompatActivity() {
                 mLensEngine = null
             }
         }
+    }
 
-        //inicializar previsualizacion
-        fun startPreview(view: View?){
-            mPreview!!.release()//mPreview este liberado
-            createFaceAnalizer()
-            createLensEngine()//Vamos a crear nuestro lente
-            startLensEngine()//Y vamos a inicializar nuestro lente
+    //inicializar previsualizacion
+    fun startPreview(view: View?){
+        mPreview!!.release()//mPreview este liberado
+        createFaceAnalizer()
+        createLensEngine()//Vamos a crear nuestro lente
+        startLensEngine()//Y vamos a inicializar nuestro lente
+    }
+
+    override fun onClick(v: View?) {
+        //Validamos si nos encontramos en la camara tracera o delantera
+        isFront = !isFront
+        if (isFront){//Si se encuntra en la camara delantera
+            lensType =  LensEngine.FRONT_LENS
+        } else {//Si se encuntra en la camara tracera
+            lensType = LensEngine.BACK_LENS
         }
+
+        if (mLensEngine != null){
+            mLensEngine!!.close()
+        }
+
+        startPreview(v)
     }
 }

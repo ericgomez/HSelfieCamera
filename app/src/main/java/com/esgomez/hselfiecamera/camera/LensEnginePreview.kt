@@ -19,7 +19,7 @@ class LensEnginePreview(context: Context, attrs: AttributeSet?) : ViewGroup(cont
     private var mStartRequested: Boolean
     private var mSurfaceAvailable: Boolean
     private var mLensEngine: LensEngine? = null
-    private var mOverlay: GraphicOverlay? = null
+    private var mOverlay: GraphicOverlay? = null //Variable que nmuestra la imagen de la camara para muchas sonrisas
 
     init {
         mStartRequested = false
@@ -110,6 +110,7 @@ class LensEnginePreview(context: Context, attrs: AttributeSet?) : ViewGroup(cont
             mStartRequested = true
             //Vamos a crea una funcion que nos va a decir
             //si la camara esta lista
+            startIfReady()
 
         }
     }
@@ -134,7 +135,7 @@ class LensEnginePreview(context: Context, attrs: AttributeSet?) : ViewGroup(cont
     fun startIfReady() {
         if (mStartRequested && mSurfaceAvailable) {
             mLensEngine!!.run(mSurfaceView.holder)
-            if (overlay != null) {
+            if (mOverlay != null) {//En el caso de la camara grupal funcione
                 val size: Size = mLensEngine!!.displayDimension
                 val min: Int = size.width.coerceAtMost(size.height)
                 val max: Int = size.width.coerceAtLeast(size.height)
