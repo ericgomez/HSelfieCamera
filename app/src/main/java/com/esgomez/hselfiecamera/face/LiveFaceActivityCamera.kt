@@ -9,10 +9,15 @@ import android.widget.Button
 import com.esgomez.hselfiecamera.R
 import com.esgomez.hselfiecamera.camera.LensEnginePreview
 import com.esgomez.hselfiecamera.overlay.GraphicOverlay
+import com.esgomez.hselfiecamera.overlay.LocalFaceGraphic
 import com.huawei.hms.mlsdk.MLAnalyzerFactory
 import com.huawei.hms.mlsdk.common.LensEngine
+import com.huawei.hms.mlsdk.common.MLAnalyzer
+import com.huawei.hms.mlsdk.common.MLResultTrailer
+import com.huawei.hms.mlsdk.face.MLFace
 import com.huawei.hms.mlsdk.face.MLFaceAnalyzer
 import com.huawei.hms.mlsdk.face.MLFaceAnalyzerSetting
+import com.huawei.hms.mlsdk.face.MLMaxSizeFaceTransactor
 import java.io.IOException
 import java.lang.RuntimeException
 
@@ -25,6 +30,8 @@ class LiveFaceActivityCamera : AppCompatActivity() {
     private var overlay: GraphicOverlay? = null
     private var lensType = LensEngine.FRONT_LENS//Inicializamos la camara en frontal
     private var detectMode = 0
+    private val smilingPossibility = 0.95f //Este valor osila en el 80% y el 90% el 95% es si verdaderamente estas sonriendo
+    private var safeToTakePicture = false //Variable para detectar si es seguro o no es seguro tomar la foto
     private var restart: Button? = null
 
 
@@ -47,6 +54,8 @@ class LiveFaceActivityCamera : AppCompatActivity() {
         overlay = findViewById(R.id.faceOverlay)
         restart = findViewById(R.id.restart)
 
+        //Creamos el analizador de rostro
+        createFaceAnalizer()
         //Funciona como el motor de nuestro lente
         createLensEngine()
     }
@@ -79,16 +88,89 @@ class LiveFaceActivityCamera : AppCompatActivity() {
         super.onSaveInstanceState(outState)
     }
 
+    //Esta funcion se va a encarga identificar si te encuentras dentro de las posibilidades de sorisa
+    // o te encuentras muy cerca de la camara o debe de tomas la foto si esta en modo grupo
+    private fun createFaceAnalizer() {
+        //Para poder analizar en que posisicion se encuentra nuestro rostro
+        val setting = MLFaceAnalyzerSetting.Factory()
+            .setFeatureType(MLFaceAnalyzerSetting.TYPE_FEATURES)
+            .setKeyPointType(MLFaceAnalyzerSetting.TYPE_UNSUPPORT_KEYPOINTS)
+            .setMinFaceProportion(0.1f)//Mantiene una proporcion minima
+            .setTracingAllowed(true)//Si se encuetra en moviemnto sigue el movimento
+            .create()
+        analyzer = MLAnalyzerFactory.getInstance().getFaceAnalyzer(setting)
+        if (detectMode == 1003){
+            val transactor =
+                //Recive la provavilida de sonriza
+                MLMaxSizeFaceTransactor.Creator(analyzer, object : MLResultTrailer<MLFace?>(){
+                    override fun objectCreateCallback(
+                        itemId: Int,
+                        obj: MLFace?
+                    ) {
+                        overlay!!.clear()//overlay se limpia
+                        if (obj == null){
+                            return//No retorna nada si no esta reconociendo una cara
+                        }
+                        val faceGraphic = LocalFaceGraphic(
+                            overlay!!,
+                            obj,
+                            this@LiveFaceActivityCamera
+                        )
+                        overlay!!.addGraphic(faceGraphic)
+                        //Reconosca nuestra sorisa para tomar la foto
+                        val emotion = obj.emotions
+                        if (emotion.smilingProbability > smilingPossibility) {
+                            safeToTakePicture = true
+                        }
+                    }
+
+                    override fun objectUpdateCallback(
+                        var1: MLAnalyzer.Result<MLFace?>?,
+                        obj: MLFace?
+                    ) {
+                        overlay!!.clear()
+                        if (obj == null){
+                            return
+                        }
+                        val faceGraphic = LocalFaceGraphic(
+                            overlay!!,
+                            obj,
+                            this@LiveFaceActivityCamera
+                        )
+                        overlay!!.addGraphic(faceGraphic)
+                        //Reconosca nuestra sorisa para tomar la foto
+                        val emotion = obj.emotions
+                        if (emotion.smilingProbability > smilingPossibility && safeToTakePicture) {
+                            safeToTakePicture = true
+                        }
+                    }
+
+                    //En caso de que perdamos la coneccion con nuestra camara
+                    override fun lostCallback(result: MLAnalyzer.Result<MLFace?>?) {
+                        overlay!!.clear()
+                    }
+
+                    override fun completeCallback() {
+                        overlay!!.clear()
+                    }
+                }).create()
+            analyzer!!.setTransactor(transactor)
+        }
+        else {
+            //validar los rostros grupal
+        }
+    }
+
     //Funcion que funciona como Motor de lente
     private fun createLensEngine(){
         //Poder analizar en que posision se encuntra nuestro Rostro
-        val setting = MLFaceAnalyzerSetting.Factory()
+        /*val setting = MLFaceAnalyzerSetting.Factory()
             .setFeatureType(MLFaceAnalyzerSetting.TYPE_FEATURES)
             .setKeyPointType(MLFaceAnalyzerSetting.TYPE_UNSUPPORT_KEYPOINTS)
             .setMinFaceProportion(0.1F)//MAntiene una proporcion minima
             .setTracingAllowed(true)//Si se encuntra en movimiento siguie el movimiento
             .create()
-        analyzer = MLAnalyzerFactory.getInstance().getFaceAnalyzer(setting)
+        analyzer = MLAnalyzerFactory.getInstance().getFaceAnalyzer(setting)*/
         val context: Context = this.applicationContext
         mLensEngine = LensEngine.Creator(context, analyzer).setLensType(lensType)
             .applyDisplayDimension(640, 480)
@@ -121,6 +203,7 @@ class LiveFaceActivityCamera : AppCompatActivity() {
         //inicializar previsualizacion
         fun startPreview(view: View?){
             mPreview!!.release()//mPreview este liberado
+            createFaceAnalizer()
             createLensEngine()//Vamos a crear nuestro lente
             startLensEngine()//Y vamos a inicializar nuestro lente
         }
