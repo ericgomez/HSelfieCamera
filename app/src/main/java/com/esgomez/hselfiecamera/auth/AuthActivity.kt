@@ -4,9 +4,11 @@ import android.app.Activity
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import com.esgomez.hselfiecamera.R
 import com.esgomez.hselfiecamera.main.MainActivity
+import com.esgomez.hselfiecamera.push.GetTokenAction
 import com.huawei.hms.support.hwid.HuaweiIdAuthManager
 import com.huawei.hms.support.hwid.request.HuaweiIdAuthParams
 import com.huawei.hms.support.hwid.request.HuaweiIdAuthParamsHelper
@@ -21,6 +23,12 @@ class AuthActivity : AppCompatActivity() {
         btnLogin.setOnClickListener {
             //Auntenticar con HuaweiID
             loginHuaweiIdAuth()
+        }
+
+        //Llamamos nuestro servicio de token
+        //De esta forma estamos implementando nuestro servicio push al arrarcar la aplicacion
+        GetTokenAction().getToken(this){
+            Log.d("PushToken: ", it)
         }
     }
 

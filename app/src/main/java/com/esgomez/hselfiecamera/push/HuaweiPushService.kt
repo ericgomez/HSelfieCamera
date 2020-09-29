@@ -11,6 +11,9 @@ import com.huawei.hms.push.RemoteMessage
 import java.lang.Exception
 import kotlin.concurrent.thread
 
+//NOTA: Para poder obtener el Token de HMS Push kit ejecutamos la aplicacion y lo buscamos en el Logcat como Debug
+//Buscar el nombre Huawei push token mismo que contiene una cadena ese es el token, el token expira cada 6 meses
+
 class HuaweiPushService: HmsMessageService() {
 
     companion object {
