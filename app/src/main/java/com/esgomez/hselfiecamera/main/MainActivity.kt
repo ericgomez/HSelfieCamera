@@ -156,9 +156,21 @@ class MainActivity : AppCompatActivity() {
             //Logout Huawei ID
             logoutHuaweiId()
         }
-
+        //Primer Boton
         mostPeople.setOnClickListener{
             val intent = Intent(this@MainActivity, LiveFaceActivityCamera::class.java)
+
+            //Saber el tipo de deteccion que nos va a colocar
+            intent.putExtra("detect_mode", 1002)//Llave "detect_mode" y codigo 1002 pero puede ser cual quier valor
+            startActivity(intent)//Llamamos nuestro intent
+        }
+
+        //Segundo boton
+        nearestPeople.setOnClickListener{
+            val intent = Intent(this@MainActivity, LiveFaceActivityCamera::class.java)
+
+            //Saber el tipo de deteccion que nos va a colocar
+            intent.putExtra("detect_mode", 1003)//Llave "detect_mode" y codigo 1003 pero puede ser cual quier valor
             startActivity(intent)//Llamamos nuestro intent
         }
     }
