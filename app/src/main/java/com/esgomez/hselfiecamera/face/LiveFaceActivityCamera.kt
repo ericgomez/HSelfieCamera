@@ -1,7 +1,10 @@
 package com.esgomez.hselfiecamera.face
 
 import android.content.Context
+import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
@@ -21,6 +24,8 @@ import com.huawei.hms.mlsdk.face.MLFace
 import com.huawei.hms.mlsdk.face.MLFaceAnalyzer
 import com.huawei.hms.mlsdk.face.MLFaceAnalyzerSetting
 import com.huawei.hms.mlsdk.face.MLMaxSizeFaceTransactor
+import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import java.lang.RuntimeException
 
@@ -286,6 +291,7 @@ class LiveFaceActivityCamera : AppCompatActivity(), View.OnClickListener {
         }
     }
 
+    //Creamos la funcion que toma la foto y creamos el elemento bitmap
     private fun takePhoto() {
         mLensEngine!!.photograph(null,
         LensEngine.PhotographListener { bytes ->
@@ -293,7 +299,51 @@ class LiveFaceActivityCamera : AppCompatActivity(), View.OnClickListener {
             mHandler.sendEmptyMessage(STOP_PREVIEW)
             val bitmap = BitmapFactory.decodeByteArray(bytes, 0 , bytes.size
             )
+            //Le decimos que cuando tome la foto la Guarde
+            saveBitmapToGallery(bitmap)
         })
+    }
+
+    //Esta funcion permite guardar el elemento Bitmap (Foto) en la galeria y almacenarla
+    private fun saveBitmapToGallery(bitmap: Bitmap) : String {
+        //Creamos el directorio de la App este es un directorio generico funciona para todos los dispositivos
+        val appDir = File("/storage/emulated/0/DCIM/Camera")
+
+        //Validamos si existe el direcctorio
+        if (!appDir.exists()) {//Si no existe creamos el direcctorio
+            val res: Boolean = appDir.mkdir()
+            if (!res) {//En caso de que no se pueda crear el directorio
+                Log.e("Error:", "No pudimos crear el directorio")
+                return ""
+            }
+        }
+        //Creamos el nombre de la foto HSelfieCamera + la fecha actual + .jpg
+        val fileName = "HSelfieCamera" + System.currentTimeMillis() + ".jpg"
+        val file = File(appDir, fileName)
+
+        //Como estamos ejecutando la variable en tiempo de ejecucion
+        //Devemos validar con un try cualquier error
+        try {
+            val fos = FileOutputStream(file)
+            //Comprimismo el bitmap en formato JPEG, con una calidad del 100% y le pasamos el fos
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+            //liberamos memoria
+            fos.flush()
+            //Cerramos
+            fos.close()
+
+            //Creamos una Uri para poder acceder a la galeria de nuestro Android
+            val uri: Uri = Uri.fromFile(file)
+            //Creamos una Broadcats para decirle a Android donde va a guardar nuestro Archivo
+            //Nota Los Intent Son la forma en que android se comunica con otras aplicaiones dentro del dispositivo
+            this.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri))
+
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+
+        //Por ultimo retornamos nuestro archivo con su absolutepad
+        return file.absolutePath
     }
 
     private val mHandler: Handler = object  : Handler(){
